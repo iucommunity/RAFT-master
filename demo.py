@@ -15,7 +15,7 @@ from utils.utils import InputPadder
 
 
 
-DEVICE = 'cuda'
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 def load_image(imfile):
     img = np.array(Image.open(imfile)).astype(np.uint8)
@@ -41,7 +41,7 @@ def viz(img, flo):
 
 def demo(args):
     model = torch.nn.DataParallel(RAFT(args))
-    model.load_state_dict(torch.load(args.model))
+    model.load_state_dict(torch.load(args.model, map_location=DEVICE))
 
     model = model.module
     model.to(DEVICE)
@@ -67,6 +67,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', help="restore checkpoint")
     parser.add_argument('--path', help="dataset for evaluation")
+    parser.add_argument('--video', help="path to input video file")
+    parser.add_argument('--out', default='output', help="output directory for frames and video")
     parser.add_argument('--small', action='store_true', help='use small model')
     parser.add_argument('--mixed_precision', action='store_true', help='use mixed precision')
     parser.add_argument('--alternate_corr', action='store_true', help='use efficent correlation implementation')
